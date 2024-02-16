@@ -1,0 +1,96 @@
+<script>
+  const log = console.log;
+</script>
+
+### Array를 통해 알아보기
+
+<script>
+  log("Arr -----------");
+  const arr = [1, 2, 3];
+  const iter1 = arr[Symbol.iterator]();
+  for (const a of iter1) log(a);
+</script>
+
+### Set을 통해 알아보기
+
+<script>
+  log("Set -----------");
+  const set = new Set([1, 2, 3]);
+  for (const a of set) log(a);
+</script>
+
+### Map을 통해 알아보기
+
+<script>
+  log("Map -----------");
+  const map = new Map([
+    ["a", 1],
+    ["b", 2],
+    ["c", 3],
+  ]);
+
+  log(map.keys());
+  log(map.values());
+  log(map.entries());
+
+  for (const key of map.keys()) log(key);
+  for (const value of map.values()) log(value);
+  for (const entries of map.entries()) log(entries);
+</script>
+
+## 이터러블/이터레이터 프로토콜 
+- 이터러블 : 이터레이터를 리턴하는 [Symbol.iterator]()를 가진 값
+- 이터레이터 : {value, done} 객체를 return 하는 next()를 가진 값
+- 이터러블/이터레이터 프로토콜 : 이터러블을 for...of, 전개연산자 등과 함께 동작하도록 한 규약 
+
+### 사용자 정의 이터러블을 통해 알아보기
+
+<script>
+  const iterable = {
+    [Symbol.iterator]() {
+      let i = 3;
+      return {
+        next() {
+          return i == 0 ? { done: true } : { done: false, value: i-- };
+        },
+        [Symbol.iterator]() {
+          return this;
+        },
+      };
+    },
+  };
+
+  let iterator = iterable[Symbol.iterator]();
+  iterator.next();
+  iterator.next();
+  for (const a of iterator) log(a);
+
+  const arr2 = [1, 2, 3];
+  const iter2 = arr2[Symbol.iterator]();
+  iter2.next();
+  for (const a of iter2) log(a);
+  log(iter2 === iter2[Symbol.iterator]());
+
+  for (const a of document.querySelectorAll("*")) log(a);
+  const all = document.querySelectorAll("*");
+  let iter3 = all[Symbol.iterator]();
+  log(iter3.next());
+  log(iter3.next());
+  log(iter3.next());
+</script>
+
+## 전개 연산자
+
+<script>
+  const a = [1, 2];
+  // a[Symbol.iterator] = null;
+  log([...a, ...arr, ...set, ...map.keys()]);
+</script>
+
+## 배운점 
+
+1. Array, Set, Map 생성자를 통해 반환받은 객체에 Symbol.iterator
+메소드를 호출하면 이터레이터를 반환 받을 수 있다. 
+2. 반환 받은 이터레이터를 for...of를 통해 순회할 수 있다.
+3. 이터러블, 이터레이터, 각 프로토콜에 대한 정의
+4. 사용자 정의 이터러블 코드 작성
