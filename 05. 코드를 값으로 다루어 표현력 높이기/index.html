@@ -1,0 +1,112 @@
+<script src="fx.js"></script>
+
+<script>
+  const products = [
+    { name: "반팔티", price: 15000 },
+    { name: "긴팔티", price: 20000 },
+    { name: "핸드폰케이스", price: 15000 },
+    { name: "후드티", price: 30000 },
+    { name: "바지", price: 25000 },
+  ];
+
+  const add = (a, b) => a + b;
+</script>
+
+# 코드를 값으로 다루어 표현력 높이기 ## go, pipe
+
+<script>
+  const go = (...args) => reduce((a, f) => f(a), args);
+  const pipe =
+    (f, ...fs) =>
+    (...args) =>
+      go(f(...args), ...fs);
+
+  go(
+    add(0, 1),
+    (a) => a + 10,
+    (a) => a + 100,
+    log
+  );
+  // 111
+
+  const f = pipe(
+    (a, b) => a + b,
+    (a) => a + 10,
+    (a) => a + 100
+  );
+
+  log(f(0, 1));
+
+  console.clear();
+</script>
+
+## curry
+
+<script>
+  const mult = curry((a, b) => a * b);
+  log(mult(3)(2));
+
+  const mult3 = mult(3);
+  log(mult3(10));
+  log(mult3(5));
+  log(mult3(3));
+</script>
+
+## curry를 통해 코드 가독성 향상
+
+<script>
+  // 1. 20000원 이상의 제품들의 총 가격을 go를 통해 구현
+  go(
+    products,
+    (products) => filter((p) => p.price >= 20000, products),
+    (products) => map((p) => p.price, products),
+    (price) => reduce(add, price),
+    log
+  );
+
+  // 2. curry 적용
+  go(
+    products,
+    (products) => filter((p) => p.price >= 20000)(products),
+    (products) => map((p) => p.price)(products),
+    (price) => reduce(add)(price),
+    log
+  );
+
+  // 3. 2번 코드를 조금 더 깔끔하게 작성
+  go(
+    products,
+    filter((p) => p.price >= 20000),
+    map((p) => p.price),
+    reduce(add),
+    log
+  );
+</script>
+
+# 함수 조합으로 함수 만들기
+
+<script>
+  console.clear();
+  // 1. total price pipe 제작
+  const total_price = pipe(
+    map((p) => p.price),
+    reduce(add)
+  );
+
+  // 2. base_total_price 제작
+  const base_total_price = (predi) => pipe(filter(predi), total_price);
+
+  // 2. go를 이용해 20000만원 미만의 제품의 총 가격
+  go(
+    products,
+    base_total_price((products) => products.price < 20000),
+    log
+  );
+
+  // 3. go를 이용해 20000만원 미만의 제품의 총 가격
+  go(
+    products,
+    base_total_price((products) => products.price >= 20000),
+    log
+  );
+</script>
