@@ -1,0 +1,91 @@
+<script>
+  const log = console.log;
+</script>
+
+# 제너레이터
+- 이터레이터이자 이터러블을 생성하는 함수
+
+<script>
+  // 1. 제너레이터 만들기
+  function* gen() {
+    yield 1;
+    yield 2;
+    yield 3;
+  }
+
+  // 2. 제너레이터를 통해 생성된 이터러블의 이터레이터와 이 이터레이터(이터러블)의 내부 이터레이터가 동일한지 비교
+  const iter = gen();
+  console.log(iter === iter[Symbol.iterator]());
+
+  // 3. 이터레이터 끝가지 순회해보기
+  log(iter.next());
+  log(iter.next());
+  log(iter.next());
+  log(iter.next());
+
+  // 4. for...of로 순회
+  for (const a of gen()) {
+    log(a);
+  }
+</script>
+
+# odds
+
+<script>
+  // 1. 숫자를 무한대로 +1시키는 infinity 제너레이터
+  function* infinity(number = 0) {
+    while (true) yield number++;
+  }
+
+  // 2. 특정 숫자까지만 반환하늕 limit 제너레이터
+  function* limit(l, iter) {
+    for (const a of iter) {
+      yield a;
+      if (a === l) return;
+    }
+  }
+
+  // 3. 특정 숫자를 limit 제너레이터에게 넘겨 홀수만 반환하는 제너레이터
+  function* odds(l) {
+    for (const a of limit(l, infinity())) {
+      if (a % 2) yield a;
+    }
+  }
+
+  let iter2 = odds(10);
+  log(iter2.next());
+  log(iter2.next());
+  log(iter2.next());
+  log(iter2.next());
+  log(iter2.next());
+  log(iter2.next());
+  log(iter2.next());
+
+  for (const a of odds(40)) log(a);
+  console.clear();
+</script>
+
+# for of, 전개 연산자, 구조 분해, 나머지 연산자
+
+<script>
+  // 1. 제너레이터를 통해 반환받은 이터레이터는 이터레이터이자 이터러블이다.
+  const oddIter = odds(10);
+  console.log(oddIter === oddIter[Symbol.iterator]());
+  console.log(oddIter.next());
+  log(...oddIter);
+
+  // 2. 전개 연산자
+  log(...odds(10));
+  log([...odds(10), ...odds(20)]);
+
+  // 구조 분해 할당
+  const [head, tail] = odds(4);
+  log(head);
+  log(tail);
+
+  // 나머지 연산자
+  const [a, b, ...rest] = odds(10);
+  log(a);
+  log(b);
+  log(rest);
+</script>
