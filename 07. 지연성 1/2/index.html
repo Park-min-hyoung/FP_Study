@@ -46,7 +46,7 @@
   };
 
   const map = curry((f, iter) => {
-    const res = [];
+    let res = [];
     iter = iter[Symbol.iterator]();
     let cur;
     while (!(cur = iter.next()).done) {
@@ -57,7 +57,8 @@
   });
 
   const filter = curry((f, iter) => {
-    const res = [];
+    let res = [];
+    iter = iter[Symbol.iterator]();
     let cur;
     while (!(cur = iter.next()).done) {
       const a = cur.value;
@@ -67,13 +68,13 @@
   });
 
   const take = curry((l, iter) => {
-    const res = [];
+    let res = [];
     iter = iter[Symbol.iterator]();
     let cur;
     while (!(cur = iter.next()).done) {
       const a = cur.value;
       res.push(a);
-      if (res.length === l) return res;
+      if (res.length == l) return res;
     }
     return res;
   });
@@ -92,6 +93,16 @@
     }
     return acc;
   });
+
+  // console.time("");
+  // go(
+  //   range(100000),
+  //   map((n) => n + 10),
+  //   filter((n) => n % 2),
+  //   take(10),
+  //   log
+  // );
+  // console.timeEnd("");
 </script>
 
 ### L.range, L.map, L.filter, take, reduce 중첩 사용
@@ -103,23 +114,33 @@
     }
   };
 
-  L.map = function* (f, iter) {
+  L.map = curry(function* (f, iter) {
     iter = iter[Symbol.iterator]();
     let cur;
     while (!(cur = iter.next()).done) {
       const a = cur.value;
       yield f(a);
     }
-  };
+  });
 
-  L.filter = function* (f, iter) {
-    iter = iter[Symbol.iter]();
+  L.filter = curry(function* (f, iter) {
+    iter = iter[Symbol.iterator]();
     let cur;
     while (!(cur = iter.next()).done) {
       const a = cur.value;
-      if (f(a)) yield a;
+      if (f(a)) {
+        yield a;
+      }
     }
-  };
-</script>
+  });
 
-########평가 순서, 시간 check 해야 함########
+  // console.time("L");
+  // go(
+  //   L.range(Infinity),
+  //   L.map((n) => n + 10),
+  //   L.filter((n) => n % 2),
+  //   take(10),
+  //   log
+  // );
+  // console.timeEnd("L");
+</script>
