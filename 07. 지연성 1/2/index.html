@@ -143,4 +143,67 @@
   //   log
   // );
   // console.timeEnd("L");
+
+  console.clear();
+</script>
+
+## 결과를 만드는 함수 reduce, take ### reduce
+
+<script>
+  // L.entries 구현
+  L.entries = function* (obj) {
+    for (const k in obj) yield [k, obj[k]];
+  };
+
+  // join 구현(이전값과 현재 값 사이에 sep을 넣어주는 함수)
+  const join = curry((sep = ",", iter) =>
+    reduce((a, b) => `${a}${sep}${b}`, iter)
+  );
+
+  // queryStr 구현(객체를 받아서 쿼리스트링으로 만들어주는 함수)
+  const queryStr = pipe(
+    L.entries,
+    L.map(([k, v]) => `${k}=${v}`),
+    join("&")
+  );
+
+  log(queryStr({ limit: 10, offset: 10, type: "notice" }));
+
+  function* a() {
+    yield 10;
+    yield 11;
+    yield 12;
+    yield 13;
+  }
+
+  log(join(" - ", a()));
+</script>
+
+### take, find
+
+<script>
+  const users = [
+    { age: 32 },
+    { age: 31 },
+    { age: 37 },
+    { age: 28 },
+    { age: 25 },
+    { age: 32 },
+    { age: 31 },
+    { age: 37 },
+  ];
+
+  // curry와 go를 사용해 find 구현
+  const find = curry((f, iter) => go(iter, L.filter(f), take(1), ([a]) => a));
+
+  // {age: 28} 출력
+  log(find((u) => u.age < 30)(users));
+
+  // user에서 28 출력(나이가 30살보다 작은 사람 중에 첫번째)
+  go(
+    users,
+    L.map((u) => u.age),
+    find((a) => a < 30),
+    log
+  );
 </script>
