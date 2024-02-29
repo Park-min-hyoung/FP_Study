@@ -1,0 +1,128 @@
+<script src="fx.js"></script>
+
+## L.flatten
+
+<script>
+  log([...[1, 2], 3, 4, ...[5, 6], ...[7, 8, 9]]);
+
+  // isIterable 구현 : 이터러블이면 true, 아니면 false
+  const isIterable = (a) => a && a[Symbol.iterator];
+
+  // L.flatten 구현
+  L.flatten = function* (iter) {
+    for (const a of iter) {
+      if (isIterable(a)) for (const b of a) yield b;
+      else a;
+    }
+  };
+
+  var it = L.flatten([[1, 2], 3, 4, [5, 6], [7, 8, 9]]);
+  log(it.next());
+  log(it.next());
+  log(it.next());
+  log(it.next());
+  log(take(6, L.flatten([[1, 2], 3, 4, [5, 6], [7, 8, 9]])));
+
+  // flatten 함수 구현
+  const flatten = pipe(L.flatten, takeAll);
+
+  // faltten 함수 사용([[1, 2], 3, 4, [5, 6], [7, 8, 9]])
+  log(flatten([[1, 2], 3, 4, [5, 6], [7, 8, 9]]));
+
+  console.clear();
+</script>
+
+# "yield *iterable"과 "for (const val of iterable) yield val"은 동일
+
+<script>
+  L.flatten = function* (iter) {
+    for (const a of iter) {
+      if (isIterable(a)) yield* a;
+      else yield a;
+    }
+  };
+</script>
+
+## L.deepFlat : 깊은 Iterable을 모두 펼칠 수 있다.
+
+<script>
+  L.deepFlat = function* recur(iter) {
+    for (const a of iter) {
+      if (isIterable(a)) yield* recur(a);
+      else yield a;
+    }
+  };
+  log([...L.deepFlat([1, [2, [3, 4], [[5]]]])]);
+
+  console.clear();
+</script>
+
+## L.flatMap
+
+<script>
+  log(
+    [
+      [1, 2],
+      [3, 4],
+      [5, 6, 7],
+    ].flatMap((a) => a)
+  );
+
+  // flatMap, map 사용해서 평탄화 한 후 각 아이템 제곱([[1, 2], [3, 4], [5, 6, 7]])
+  log(
+    [
+      [1, 2],
+      [3, 4],
+      [5, 6, 7],
+    ].flatMap((arr) => arr.map((a) => a * a))
+  );
+
+  // flatten 사용
+  log(
+    flatten([
+      [1, 2],
+      [3, 4],
+      [5, 6, 7],
+    ]).map((a) => a * a)
+  );
+
+  // L.flatMap과 flatMap 구현
+  L.flatMap = curry(pipe(L.map, L.flatten));
+  const flatMap = curry(pipe(L.map, flatten));
+
+  var it = L.flatMap(
+    (a) => a,
+    [
+      [1, 2],
+      [3, 4],
+      [5, 6, 7],
+    ]
+  );
+  log([...it]);
+
+  log(
+    L.flatMap(
+      L.range,
+      map((a) => a + 1, [1, 2, 3])
+    )
+  );
+
+  var it = L.flatMap(
+    L.range,
+    map((a) => a + 1, [1, 2, 3])
+  );
+  log(it.next());
+  log(it.next());
+  log(it.next());
+  log(it.next());
+
+  log(
+    take(
+      3,
+      L.flatMap(
+        L.range,
+        map((a) => a + 1, [1, 2, 3])
+      )
+    )
+  );
+</script>
