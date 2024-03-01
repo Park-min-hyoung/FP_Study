@@ -1,0 +1,118 @@
+<script src="fx.js"></script>
+
+# Promise ## 일급
+
+<script>
+  // 0.1초 후에 현재 값에 10을 더한 후 callback의 전달 인자로 설정 및 호출하는 함수
+  function add10(a, callback) {
+    setTimeout(() => callback(a + 10), 100);
+  }
+
+  add10(5, (res) => {
+    add10(res, (res) => {
+      add10(res, (res) => {
+        log(res);
+      });
+    });
+  });
+
+  // Promise 생성자를 통해 0.1초 후 현재 값에 20을 더한 값을 promise 객체 형태로 반환하는 함수
+  function add20(a) {
+    return new Promise((resolve) => setTimeout(() => resolve(a + 20), 100));
+  }
+
+  add20(5).then(add20).then(add20).then(add20).then(log);
+  console.clear();
+</script>
+
+## 일급 활용
+
+<script>
+  // 0.1초 뒤에 매개변수 a를 promise 객체 형태로 반환하는 함수
+  const delay100 = (a) =>
+    new Promise((resolve) => setTimeout(() => resolve(a), 1000));
+
+  const add5 = (a) => a + 5;
+
+  const n1 = 10;
+  log(go1(n1, add5));
+
+  const n2 = delay100(10);
+  go1(go1(n2, add5), log);
+
+  console.clear();
+</script>
+
+## Composition 
+
+## 모나드 관점에서 바라보는 Promise : 비동기 작업과정에서 함수를 적절한 시점에 평가해서 안전하게 함수를 함성시킨다.
+
+<script type="module">
+  // f . g
+  // f(g(x))
+
+  //   const g = (a) => a + 1;
+  //   const f = (a) => a * a;
+
+  //   log(f(g(1)));
+  //   log(f(g()));
+
+  Array.of(1)
+    .map(g)
+    .map(f)
+    .forEach((r) => log(r));
+  // log(f(g()))는 NaN을 출력되 외부에 영향 o => 안전하게 합성되었다고 보기 어렵다.
+  // 사용자에게 전달되지 않는 값(array, 위 코드의 map(f)까지)을 굳이 외부에 전달할 필요가 없다.
+  // 아래 코드는 아무것도 출력되지 않아서 외부에 영향 x => 안전하게 합성(모나드)
+  []
+    .map(g)
+    .map(f)
+    .forEach((r) => log(r));
+
+  // Promise도 함수 합성을 할 수 있다.
+  Promise.resolve(2)
+    .then(g)
+    .then(f)
+    .then((r) => log(r));
+  new Promise((resolve) => setTimeout(() => resolve(2), 100))
+    .then(g)
+    .then(f)
+    .then((r) => log(r));
+</script>
+
+## Kleisli Composition : 오류가 있을 수 있는 상황에서의 함수 합성을 안전하게하는 규칙
+
+<script>
+  // f . g
+  // g(x)가 정상적인 결과를 평가할 때는 f(g(x)) = f(g(x))
+  // g(x)에서 에러 발생시 f(g(x)) = g(x)
+
+  var users = [
+    { id: 1, name: "aa" },
+    { id: 2, name: "bb" },
+    { id: 3, name: "cc" },
+  ];
+
+  // id를 통해 특정 객체를 반환
+  // id와 일치하는 객체가 없을 경우 reject를 통해 error 반환
+  const getUserById = (id) =>
+    find((u) => u.id === id, users) || Promise.reject("없다");
+
+  // f
+  const f = ({ name }) => name;
+  const g = getUserById;
+
+  // fg 함수 제작
+  const fg = (id) =>
+    Promise.resolve(id)
+      .then(g)
+      .then(f)
+      .catch((e) => e);
+  fg(2).then(log);
+
+  setTimeout(function () {
+    users.pop();
+    users.pop();
+    fg(2).then(log);
+  }, 1000);
+</script>
