@@ -43,9 +43,8 @@
   console.clear();
 </script>
 
-## Composition 
-
-## 모나드 관점에서 바라보는 Promise : 비동기 작업과정에서 함수를 적절한 시점에 평가해서 안전하게 함수를 함성시킨다.
+## Composition ## 모나드 관점에서 바라보는 Promise : 비동기 작업과정에서 함수를
+적절한 시점에 평가해서 안전하게 함수를 함성시킨다.
 
 <script type="module">
   // f . g
@@ -80,7 +79,8 @@
     .then((r) => log(r));
 </script>
 
-## Kleisli Composition : 오류가 있을 수 있는 상황에서의 함수 합성을 안전하게하는 규칙
+## Kleisli Composition : 오류가 있을 수 있는 상황에서의 함수 합성을 안전하게하는
+규칙
 
 <script>
   // f . g
@@ -103,16 +103,16 @@
   const g = getUserById;
 
   // fg 함수 제작
-  const fg = (id) =>
-    Promise.resolve(id)
-      .then(g)
-      .then(f)
-      .catch((e) => e);
-  fg(2).then(log);
+  const fg = (id) => Promise.resolve(id).then(g).then(f);
+  // fg(2).then(log);
 
   setTimeout(function () {
     users.pop();
     users.pop();
-    fg(2).then(log);
+    // g와 f . g의 결과가 같다.
+    fg(2).catch((e) => log(e));
+    g(2).catch((e) => log(e));
   }, 1000);
 </script>
+
+# 모나드는 "패턴"이고 Kleisli Composition는 "함수 합성 방법 중 하나"이다.

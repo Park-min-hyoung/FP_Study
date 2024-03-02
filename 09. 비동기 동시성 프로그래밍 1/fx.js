@@ -17,7 +17,7 @@ const reduce = curry((f, acc, iter) => {
     iter = iter[Symbol.iterator]();
   }
   return go1(acc, function recur(acc) {
-    let cur;
+    let cur; 
     while (!(cur = iter.next()).done) {
       const a = cur.value;
       acc = f(acc, a);

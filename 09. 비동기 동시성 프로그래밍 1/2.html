@@ -1,0 +1,22 @@
+<script src="fx.js"></script>
+
+## go, pipe, reduce에서 비동기 제어
+
+<script>
+  /**
+   * pipe, go, reduce가 중간에 promise를 만났을 때 적절한 제어가 가능하다.(안전한 함수 합성)
+   * 1. resolve를 만날 경우 => reduce에 go2 함수를 반환하게 함으로써 보완
+   * 2. reject를 만날 경우 => 이후 작업은 진행하지 않는다(catch를 통해 error 헨들링)
+   * 3. 나머지 동기 작업은 하나의 call stack에서 처리
+   */
+  go(
+    Promise.resolve(1),
+    (a) => a + 10,
+    (a) => Promise.reject("error~~"),
+    // (a) => Promise.resolve(a + 100),
+    (a) => console.log("----"),
+    (a) => a + 1000,
+    (a) => a + 10000,
+    log
+  ).catch((a) => console.log(a));
+</script>
