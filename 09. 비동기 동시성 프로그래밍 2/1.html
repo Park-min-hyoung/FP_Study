@@ -1,0 +1,68 @@
+<script src="fx.js"></script>
+
+# 동시성 : 여러 작업이 동시에 진행되는 것(map -> filter -> take) # 지연성 : 평가
+시점을 지연시켰다가 필요할 때 평가 # 평가 : 표현식이나 문이 실행되어 값을
+계산하고 도출하는 것
+
+<!-- <script>
+  go(
+    [1, 2, 3, 4, 5],
+    L.map((a) => Promise.resolve(a * a)),
+    L.filter((a) => Promise.resolve(a % 2)),
+    reduce(add)
+  );
+
+  console.log(take(1, [1, 2, 3, 4, 5]));
+
+  const delay1000 = (a) =>
+    new Promise((resolve) => {
+      console.log("hi~", a);
+      setTimeout(() => resolve(a), 1000);
+    });
+
+  // map((a) => delay1000(a * a), [1, 2, 3, 4]).then(log);
+  go(
+    [1, 2, 3, 4],
+    map((a) => delay1000(a * a)),
+    map((a) => a + 1),
+    log
+  );
+
+  console.clear();
+</script> -->
+
+<script>
+  const catchNoop = (arr) => (
+    arr.forEach((a) => (a instanceof Promise ? a.catch(nop) : a)), arr
+  );
+
+  const C = {};
+
+  C.reduce = curry((f, acc, iter) => {
+    const iter2 = catchNoop(iter ? [...iter] : [...acc]);
+
+    return iter ? reduce(f, acc, iter2) : reduce(f, iter2);
+  });
+
+  C.take = curry((l, iter) => take(l, catchNoop(iter)));
+
+  C.takeAll = C.take(Infinity);
+
+  C.filter = curry(pipe(L.filter, C.takeAll));
+
+  const delay1000 = (a) =>
+    new Promise((resolve) => {
+      console.log("hi~");
+      setTimeout(() => resolve(a), 1000);
+    });
+
+  console.time("");
+  go(
+    [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    L.map((a) => delay1000(a * a)),
+    C.filter((a) => a % 2),
+    reduce(add),
+    console.log,
+    (_) => console.timeEnd(" ")
+  );
+</script>
