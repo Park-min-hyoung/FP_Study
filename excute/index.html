@@ -1,0 +1,168 @@
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+
+<script>
+  // joinLink
+  const joinLink = _.curry((parentKey, [key, value]) => [
+    _.join([parentKey, key], "."),
+    value,
+  ]);
+
+  const result = joinLink("parentKey")(["childKey", "childValue"]);
+  console.log(result); // 출력: ["parentKey.childKey", "childValue"]
+</script>
+
+<script>
+  // mappingEvent
+  const mappingEvent = _.curry((type, [name]) => ({
+    type,
+    name,
+  }));
+  const booleanResult = mappingEvent("boolean")(["isChecked"]);
+  const textResult = mappingEvent("text")(["inputValue"]);
+
+  console.log(booleanResult); // 출력: { type: "boolean", name: "isChecked" }
+  console.log(textResult); // 출력: { type: "text", name: "inputValue" }
+</script>
+
+<script>
+  // curriedStartWith
+  const curriedStartWith = _.curry((extractText, prefixs, text) =>
+    prefixs.some((prefix) => _.startsWith(extractText(text), prefix))
+  );
+
+  const extractText = (target) => target.text;
+  const hasPrefix = curriedStartWith(extractText, ["apple", "banana"]);
+
+  const target1 = { text: "apple pie" };
+  const target2 = { text: "banana bread" };
+  const target3 = { text: "orange juice" };
+
+  console.log(hasPrefix(target1)); // true, "apple pie"은 "apple"로 시작함
+  console.log(hasPrefix(target2)); // true, "banana bread"은 "banana"로 시작함
+  console.log(hasPrefix(target3)); // false, "orange juice"는 어느 접두사에도 해당하지 않음
+</script>
+
+<script>
+  // pathMatch
+  const pathMatch = _.curry((match, str) =>
+    match instanceof RegExp ? match.test(str) : match === str
+  );
+
+  const exactMatch = pathMatch("/home", "/home"); // true, 정확히 일치
+  const patternMatch = pathMatch(/\/users\/\d+/, "/users/123"); // true, 정규 표현식에 맞음
+  const noMatch = pathMatch("/about", "/contact"); // false, 일치하지 않음
+
+  console.log(exactMatch); // 출력: true
+  console.log(patternMatch); // 출력: true
+  console.log(noMatch); // 출력: false
+</script>
+
+<script>
+  // c_match
+  const c_match = _.curry((collections, initialValue, target) =>
+    _.reduce(
+      collections,
+      (acc, [r, c]) => (acc === initialValue && c(target) ? r : acc),
+      initialValue
+    )
+  );
+
+  const collections = [
+    ["apple", (target) => target.includes("apple")],
+    ["banana", (target) => target.includes("banana")],
+    ["orange", (target) => target.includes("orange")],
+    ["fake apple", (target) => target.includes("apple")],
+  ];
+
+  const result1 = c_match(collections, "default", "apple pie"); // "apple"
+  const result2 = c_match(collections, "default", "banana bread"); // "banana"
+  const result3 = c_match(collections, "default", "no fruit"); // "default"
+
+  console.log(result1); // 출력: "apple"
+  console.log(result2); // 출력: "banana"
+  console.log(result3); // 출력: "default"
+
+  console.clear();
+</script>
+
+<script>
+  // genreateBasePath
+  const genreateBasePath = _.curry((path, version = "v1") =>
+    _.join(["api", version, path], "/")
+  );
+
+  const basePath = genreateBasePath("users");
+  console.log(basePath); // 출력: "api/v1/users"
+
+  const customBasePath = genreateBasePath("posts", "v2");
+  console.log(customBasePath); // 출력: "api/v2/posts"
+</script>
+
+<script>
+  // generateURL
+  const generateURL = _.curry((path, query = "") => _.join([path, query], "?"));
+
+  const url1 = generateURL("users", "page=1&limit=10");
+  console.log(url1); // 출력: "users?page=1&limit=10"
+
+  const url2 = generateURL("posts");
+  console.log(url2); // 출력: "posts?"
+</script>
+
+<script>
+  // generatePathByBase
+  const generatePathByBase = _.curry((base, ...string) =>
+    _.join([base, ...string], "/")
+  );
+
+  const path1 = generatePathByBase(
+    "api/v1",
+    "users",
+    "profile",
+    "park",
+    "good",
+    "boy"
+  );
+  console.log(path1); // 출력: "api/v1/users/profile"
+
+  const path2 = generatePathByBase("api", "products", "details");
+  console.log(path2); // 출력: "api/products/details"
+</script>
+
+<script>
+  // sanitizeQueryObj
+  const sanitizeQueryObj = _.curry((dict) => {
+    const copyDict = _.cloneDeep(dict);
+    const entried = _.entries(copyDict);
+    for (const [k, v] of entried) {
+      if (_.isUndefined(v) || _.isNull(v)) delete copyDict[k];
+      else if (_.isArray(v) && v.length === 0) delete copyDict[k];
+      else if (v === "") delete copyDict[k];
+    }
+
+    return copyDict;
+  });
+
+  const obj1 = {
+    name: "John",
+    age: null,
+    gender: "",
+    hobbies: [],
+    email: "john@example.com",
+  };
+
+  const sanitizedObj1 = sanitizeQueryObj(obj1);
+  console.log(sanitizedObj1);
+  // 출력: { name: 'John', email: 'john@example.com' }
+
+  const obj2 = {
+    category: "electronics",
+    brand: undefined,
+    price: 0,
+    features: [],
+  };
+
+  const sanitizedObj2 = sanitizeQueryObj(obj2);
+  console.log(sanitizedObj2);
+  // 출력: { category: 'electronics' }
+</script>
